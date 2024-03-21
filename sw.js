@@ -53,6 +53,8 @@ self.addEventListener("activate", (event) => {
 	event.waitUntil(deleteOldCaches());
 });
 
+// CATCH FETCH - ASSETS //
+
 self.addEventListener("fetch", async (event) => {
 	const fetchInterception = async () => {
 		const cachedResponse = await caches.match(event.request);
@@ -66,4 +68,15 @@ self.addEventListener("fetch", async (event) => {
 	};
 
 	event.respondWith(fetchInterception());
+});
+
+// SYNC EVENT - SEND MESSAGE TO APP === RUN WAITING OPERATIONS //
+
+self.addEventListener("sync", async (event) => {
+	console.log("sync event : ", event);
+
+	const clients = await self.clients.matchAll();
+	clients.forEach((client) => {
+		client.postMessage("onLine");
+	});
 });

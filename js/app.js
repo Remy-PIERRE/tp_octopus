@@ -4,6 +4,8 @@ import {
 	handleOperationsWaitingInDBI,
 } from "./idb.js";
 
+// SERVICE WORKER REGISTRATION //
+
 if ("serviceWorker" in navigator) {
 	try {
 		await navigator.serviceWorker.register("./sw.js");
@@ -12,24 +14,35 @@ if ("serviceWorker" in navigator) {
 	}
 }
 
+// SYNC MANAGER REGISTRATION //
+
+if ("SyncManager" in window) {
+	const registration = await navigator.serviceWorker.ready;
+
+	try {
+		registration.sync.register("syncPerson");
+	} catch (error) {
+		console.log("Error registring syncManager : ", error.message);
+	}
+}
+
 // INIT APP //
 
 (async function initApp() {
 	console.log("initApp()");
 
-	await getAndDisplayPersons();
+	// CATCH MESSAGES FROM SW //
+	navigator.serviceWorker.addEventListener("message", async (event) => {
+		console.log("get message from sw : ", event.data);
 
-	// fetch then clean wainting queries //
-	if (navigator.onLine && (await isOperationsWaitginInDBI())) {
-		await handleOperationsWaitingInDBI();
-	}
-
-	// fetch then clean wainting queries when sync come back //
-	window.addEventListener("online", async () => {
-		if (navigator.onLine && (await isOperationsWaitginInDBI())) {
-			await handleOperationsWaitingInDBI();
+		// sync event from sw - RUN WAITING OPERATIONS //
+		if (event.data === "onLine") {
+			if (await isOperationsWaitginInDBI())
+				await handleOperationsWaitingInDBI();
 		}
 	});
+
+	await getAndDisplayPersons();
 
 	// add person button //
 	document.querySelector("#ajouter").addEventListener("click", handleAddPerson);

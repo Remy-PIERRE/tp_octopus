@@ -6,8 +6,7 @@ import {
 	cleanDBI,
 } from "./idb.js";
 
-const url =
-	"https://pkcontact-65917-default-rtdb.europe-west1.firebasedatabase.app/";
+const url = "";
 
 // GET //
 
